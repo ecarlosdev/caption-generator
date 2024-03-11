@@ -1,4 +1,4 @@
-from flask import Flask, request, send_file
+from flask import Flask, Response, request, send_file, stream_with_context
 from flask_cors import CORS
 from youtube_transcript_api import YouTubeTranscriptApi
 from youtube_transcript_api.formatters import SRTFormatter
@@ -25,7 +25,7 @@ def get_subtitles():
         formatter = SRTFormatter()
         strFormatedString = formatter.format_transcript(transcript)
         srt_file = write_to_srt_file(strFormatedString)
-        return send_file(srt_file, download_name=f'{video_id}_subtitles.srt')
+        return Response(stream_with_context(srt_file), content_type='application/octet-stream', direct_passthrough=True)
     except Exception as e:
         return 'Internal Server Error', 500
         
