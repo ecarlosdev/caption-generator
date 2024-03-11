@@ -25,7 +25,7 @@ def get_subtitles():
         formatter = SRTFormatter()
         strFormatedString = formatter.format_transcript(transcript)
         srt_file = write_to_srt_file(strFormatedString)
-        return Response(stream_with_context(srt_file), content_type='application/octet-stream', direct_passthrough=True)
+        return Response(stream_with_context(srt_file), content_type='text/plain', direct_passthrough=True)
     except Exception as e:
         return 'Internal Server Error', 500
         
