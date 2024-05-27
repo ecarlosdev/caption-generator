@@ -2,12 +2,30 @@ from flask import Flask, Response, request, send_file, stream_with_context
 from flask_cors import CORS
 from youtube_transcript_api import YouTubeTranscriptApi
 from youtube_transcript_api.formatters import SRTFormatter
-from urllib.parse import urlparse, parse_qs
 import io
 import re
+import traceback
 
 app = Flask(__name__)
 CORS(app)
+
+def remove_consecutive_repeated_words(transcript):
+    pattern = r'\b(\w+)\s+\1\b'
+    new_transcript = []
+    try:
+        for i in range(len(transcript)):
+            currentLineText = transcript[i]['text']
+
+            newText = re.sub(pattern, r'\1', currentLineText, flags=re.IGNORECASE)
+            newText = newText.strip()
+
+            if newText:
+                transcript[i]['text'] = newText
+                new_transcript.append(transcript[i])
+                
+        return new_transcript
+    except Exception as e:
+        print(traceback.format_exc())
 
 def remove_tags(transcript):
     new_transcript = []
@@ -32,7 +50,7 @@ def get_subtitles():
         if not transcript:
             return 'No transcript found', 404
         formatter = SRTFormatter()
-        strFormatedString = formatter.format_transcript(remove_tags(transcript))
+        strFormatedString = formatter.format_transcript(remove_consecutive_repeated_words(remove_tags(transcript)))
         srt_file = write_to_srt_file(strFormatedString)
         return Response(stream_with_context(srt_file), content_type='text/plain', direct_passthrough=True)
     except Exception as e:
