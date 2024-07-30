@@ -46,9 +46,19 @@ def get_subtitles():
     video_id = request.args.get('video_id')
     transcript_list = YouTubeTranscriptApi.list_transcripts(video_id)
     try:
-        transcript = transcript_list.find_transcript(['en']).fetch()
+        try:
+            transcript = transcript_list.find_generated_transcript(['en'])
+        except:
+            transcript = None
+
+        if not transcript:
+            transcript = transcript_list.find_manually_created_transcript(['en'])
+            
         if not transcript:
             return 'No transcript found', 404
+        
+        transcript = transcript.fetch()
+        
         formatter = SRTFormatter()
         strFormatedString = formatter.format_transcript(remove_consecutive_repeated_words(remove_tags(transcript)))
         srt_file = write_to_srt_file(strFormatedString)
