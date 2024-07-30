@@ -46,7 +46,7 @@ def get_subtitles():
     video_id = request.args.get('video_id')
     transcript_list = YouTubeTranscriptApi.list_transcripts(video_id)
     try:
-        transcript = transcript_list.find_generated_transcript(['en', 'es']).fetch()
+        transcript = transcript_list.find_transcript(['en']).fetch()
         if not transcript:
             return 'No transcript found', 404
         formatter = SRTFormatter()
